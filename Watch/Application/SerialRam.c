@@ -54,6 +54,10 @@
 
 #define SEQUENTIAL_MODE_COMMAND ( 0x41 )
 
+/* idle buffer is now centered vertically */
+#define IDLE_BUFFER_STARTING_ROW  ( 33 )
+
+
 /* errata - DMA variables cannot be function scope */
 static unsigned char DummyData = 0x00;
 static unsigned char ReadData = 0x00;
@@ -555,7 +559,7 @@ void LoadTemplateHandler(tMessage* pMsg)
 unsigned char GetStartingRow(unsigned char Mode)
 {
   return (Mode == IDLE_BUFFER_SELECT &&
-    GetIdleBufferConfiguration() == WATCH_CONTROLS_TOP) ? 30 : 0;
+    GetIdleBufferConfiguration() == WATCH_CONTROLS_TOP) ? IDLE_BUFFER_STARTING_ROW : 0;
 }
 
 unsigned char GetBufferIndex(unsigned char Mode, unsigned char Type)

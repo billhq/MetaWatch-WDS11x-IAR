@@ -143,6 +143,7 @@ static void DisplayDate(void);
 
 /* the internal buffer */
 #define STARTING_ROW                  ( 0 )
+#define IDLE_BUFFER_STARTING_ROW  ( 33 )
 #define WATCH_DRAWN_IDLE_BUFFER_ROWS  ( 30 )
 #define PHONE_IDLE_BUFFER_ROWS        ( 66 )
 
@@ -1395,18 +1396,18 @@ static void DrawDateTime(unsigned char OnceConnected)
   msd = Hour / 10;
   lsd = Hour % 10;
 
-  // clean date&time area
-  FillMyBuffer(STARTING_ROW, WATCH_DRAWN_IDLE_BUFFER_ROWS, 0x00);
-  
-  gRow = 6;
+  gRow = IDLE_BUFFER_STARTING_ROW+3;
   gColumn = 0;
   gBitColumnMask = BIT4;
   SetFont(MetaWatchTime);
 
+    // clean date&time area
+  FillMyBuffer(IDLE_BUFFER_STARTING_ROW, WATCH_DRAWN_IDLE_BUFFER_ROWS, 0x00);
+  
   /* if first digit is zero then leave location blank */
   if ( msd == 0 && GetTimeFormat() == TWELVE_HOUR )
   {
-    WriteFontCharacter(TIME_CHARACTER_SPACE_INDEX);
+    WriteFontCharacter(0);
   }
   else
   {
@@ -1441,7 +1442,7 @@ static void DrawDateTime(unsigned char OnceConnected)
     if ( !QueryBluetoothOn() )
     {
       CopyColumnsIntoMyBuffer(pBluetoothOffIdlePageIcon,
-                              IDLE_PAGE_ICON_STARTING_ROW,
+    		  	  	  	  	  IDLE_BUFFER_STARTING_ROW+IDLE_PAGE_ICON_STARTING_ROW,
                               IDLE_PAGE_ICON_SIZE_IN_ROWS,
                               IDLE_PAGE_ICON_STARTING_COL,
                               IDLE_PAGE_ICON_SIZE_IN_COLS);
@@ -1449,7 +1450,7 @@ static void DrawDateTime(unsigned char OnceConnected)
     else if ( !QueryPhoneConnected() )
     {
       CopyColumnsIntoMyBuffer(pPhoneDisconnectedIdlePageIcon,
-                              IDLE_PAGE_ICON_STARTING_ROW,
+    		  	  	  	  	  IDLE_BUFFER_STARTING_ROW+IDLE_PAGE_ICON_STARTING_ROW,
                               IDLE_PAGE_ICON_SIZE_IN_ROWS,
                               IDLE_PAGE_ICON_STARTING_COL,
                               IDLE_PAGE_ICON_SIZE_IN_COLS);
@@ -1459,7 +1460,7 @@ static void DrawDateTime(unsigned char OnceConnected)
       if ( QueryBatteryCharging() )
       {
         CopyColumnsIntoMyBuffer(pBatteryChargingIdlePageIconType2,
-                                IDLE_PAGE_ICON2_STARTING_ROW,
+        						IDLE_BUFFER_STARTING_ROW+IDLE_PAGE_ICON2_STARTING_ROW,
                                 IDLE_PAGE_ICON2_SIZE_IN_ROWS,
                                 IDLE_PAGE_ICON2_STARTING_COL,
                                 IDLE_PAGE_ICON2_SIZE_IN_COLS);
@@ -1471,14 +1472,15 @@ static void DrawDateTime(unsigned char OnceConnected)
         if ( bV < 3500 )
         {
           CopyColumnsIntoMyBuffer(pLowBatteryIdlePageIconType2,
-                                  IDLE_PAGE_ICON2_STARTING_ROW,
+        		  	  	  	  	  IDLE_BUFFER_STARTING_ROW+IDLE_PAGE_ICON2_STARTING_ROW,
                                   IDLE_PAGE_ICON2_SIZE_IN_ROWS,
                                   IDLE_PAGE_ICON2_STARTING_COL,
                                   IDLE_PAGE_ICON2_SIZE_IN_COLS);
         }
         else
         {
-          DisplayDayOfWeek();
+         // show date only
+         // DisplayDayOfWeek();
           DisplayDate();
         }
       }
@@ -1487,25 +1489,25 @@ static void DrawDateTime(unsigned char OnceConnected)
   else
   {
     if ( GetTimeFormat() == TWELVE_HOUR ) DisplayAmPm();
-    DisplayDayOfWeek();
+    //DisplayDayOfWeek();
     DisplayDate();
   }
   
-  SendMyBufferToLcd(STARTING_ROW, WATCH_DRAWN_IDLE_BUFFER_ROWS);
+  SendMyBufferToLcd(IDLE_BUFFER_STARTING_ROW, WATCH_DRAWN_IDLE_BUFFER_ROWS);
 }
 
 static void DisplayAmPm(void)
 {
   int Hour = RTCHOUR;
   unsigned char const *pIcon = ( Hour >= 12 ) ? Pm : Am;
-  WriteIcon4w10h(pIcon,0,8);
+  WriteIcon4w10h(pIcon,IDLE_BUFFER_STARTING_ROW,8);
 }
 
 static void DisplayDayOfWeek(void)
 {
   /* row offset = 0 or 10 , column offset = 8 */
   //WriteIcon4w10h(DaysOfWeek[RTCDOW], GetTimeFormat() == TWENTY_FOUR_HOUR ? 0 : 10, 8);
-  gRow = GetTimeFormat() == TWENTY_FOUR_HOUR ? 3 : 13;
+  gRow = GetTimeFormat() == TWENTY_FOUR_HOUR ? IDLE_BUFFER_STARTING_ROW+3 : IDLE_BUFFER_STARTING_ROW+13;
   gColumn = 8;
   SetFont(MetaWatch7);
   WriteFontString((tString *)DaysOfTheWeek[GetLanguage()][RTCDOW]);
@@ -1531,7 +1533,7 @@ static void DisplayDate(void)
     }
 
     /* make it line up with AM/PM and Day of Week */
-    gRow = 22;
+    gRow = IDLE_BUFFER_STARTING_ROW+13;
     gColumn = 8;
     gBitColumnMask = BIT1;
     SetFont(MetaWatch7);
